@@ -15,42 +15,40 @@
             <input class="form-control" asp-for="Product.Price" />
         </div>
         <div class="form-group">
-            <label>Category</label>
+            <label>Category Name</label>
             <input class="form-control" asp-for="Product.Category.Name" />
-        </div>
-        <div class="form-group">
-            <label>Supplier</label>
-            <input class="form-control" asp-for="Product.Supplier.Name" />
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
-    <button form="htmlform" asp-page="FormHandler" class="btn btn-primary mt-2">
-        Sumit (Outside Form)
-    </button>
 </div>
 
 @functions {
-    [IgnoreAntiforgeryToken]
     public class FormHandlerModel : PageModel
     {
         private DataContext context;
+
         public FormHandlerModel(DataContext dbContext)
         {
             context = dbContext;
         }
+
+        [BindProperty]
         public Product Product { get; set; }
+
+        [BindProperty(Name = "Product.Category")]
+        public Category Category { get; set; }
+
         public async Task OnGetAsync(long id = 1)
         {
             Product = await context.Products.Include(p => p.Category)
             .Include(p => p.Supplier).FirstAsync(p => p.ProductId == id);
         }
+
         public IActionResult OnPost()
         {
-            foreach (string key in Request.Form.Keys
-            .Where(k => !k.StartsWith("_")))
-            {
-                TempData[key] = string.Join(", ", Request.Form[key]);
-            }
+            TempData["product"] = System.Text.Json.JsonSerializer.Serialize(Product);
+            TempData["category"]
+            = System.Text.Json.JsonSerializer.Serialize(Category);
             return RedirectToPage("FormResults");
         }
     }
