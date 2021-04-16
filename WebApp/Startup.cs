@@ -6,6 +6,7 @@ using WebApp.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebApp.Filters;
 
 namespace WebApp
 {
@@ -33,6 +34,12 @@ namespace WebApp
 
             services.Configure<MvcOptions>(opts => opts.ModelBindingMessageProvider
             .SetValueMustNotBeNullAccessor(value => "Please enter a value"));
+
+            services.AddScoped<GuidResponseAttribute>();
+            services.Configure<MvcOptions>(opts => {
+                opts.Filters.Add<HttpsOnlyAttribute>();
+                opts.Filters.Add(new MessageAttribute("This is the globally-scoped filter"));
+            });
         }
         public void Configure(IApplicationBuilder app, DataContext context, IAntiforgery antiforgery)
         {
